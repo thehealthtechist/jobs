@@ -74,17 +74,18 @@
         </div>
       </div>
 
-      <div class="pt-4 flex flex-col sm:flex-row gap-3 max-w-2xl mx-auto">
+      <!-- SEARCH, FILTER & SORT CONTROL BAR -->
+      <div class="pt-4 flex flex-col sm:flex-row gap-3 max-w-3xl mx-auto">
         <input 
           type="text" 
           id="searchInput" 
           placeholder="Search role, skill, or company (e.g., Epic, AI, Remote)..." 
-          class="w-full px-4 py-3 rounded-xl bg-slate-800 text-white border border-slate-700 focus:outline-none focus:border-brand-emerald text-sm placeholder-slate-400"
+          class="w-full sm:w-1/2 px-4 py-3 rounded-xl bg-slate-800 text-white border border-slate-700 focus:outline-none focus:border-brand-emerald text-sm placeholder-slate-400"
           onkeyup="filterJobs()"
         />
         <select 
           id="categoryFilter" 
-          class="px-4 py-3 rounded-xl bg-slate-800 text-white border border-slate-700 focus:outline-none focus:border-brand-emerald text-sm cursor-pointer"
+          class="w-full sm:w-1/4 px-4 py-3 rounded-xl bg-slate-800 text-white border border-slate-700 focus:outline-none focus:border-brand-emerald text-sm cursor-pointer"
           onchange="filterJobs()"
         >
           <option value="All">All Categories</option>
@@ -92,6 +93,16 @@
           <option value="Product & Engineering">Product & Engineering</option>
           <option value="Clinical Informatics">Clinical Informatics</option>
           <option value="Operations">Operations</option>
+        </select>
+        <select 
+          id="sortSelect" 
+          class="w-full sm:w-1/4 px-4 py-3 rounded-xl bg-slate-800 text-white border border-slate-700 focus:outline-none focus:border-brand-emerald text-sm cursor-pointer"
+          onchange="filterJobs()"
+        >
+          <option value="newest">Newest First</option>
+          <option value="title-asc">Title (A – Z)</option>
+          <option value="title-desc">Title (Z – A)</option>
+          <option value="company-asc">Company (A – Z)</option>
         </select>
       </div>
 
@@ -195,7 +206,7 @@
         const response = await fetch('jobs.json');
         if (!response.ok) throw new Error('Network response was not ok');
         allJobs = await response.json();
-        renderJobs(allJobs);
+        filterJobs(); // Run initial render through filter/sort logic
       } catch (error) {
         console.error('Error loading jobs:', error);
         document.getElementById('jobList').innerHTML = `
@@ -233,7 +244,67 @@
       }
     }
 
-    // 4. Render jobs
+    // 4. Relative Date Converter for Sorting
+    function getDaysAgo(postedStr) {
+      if (!postedStr) return 999;
+      const str = postedStr.toLowerCase().trim();
+      
+      if (str === 'today') return 0;
+      if (str === '1 day ago') return 1;
+      if (str.includes('days ago')) {
+        const days = parseInt(str);
+        return isNaN(days) ? 30 : days;
+      }
+      
+      const parsedDate = Date.parse(postedStr);
+      if (!isNaN(parsedDate)) {
+        const diffMs = Date.now() - parsedDate;
+        return Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      }
+      
+      return 999;
+    }
+
+    // 5. Sorting Helper
+    function sortJobsList(jobs, sortBy) {
+      return jobs.sort((a, b) => {
+        switch (sortBy) {
+          case 'title-asc':
+            return a.title.localeCompare(b.title);
+          case 'title-desc':
+            return b.title.localeCompare(a.title);
+          case 'company-asc':
+            return a.company.localeCompare(b.company);
+          case 'newest':
+          default:
+            return getDaysAgo(a.posted) - getDaysAgo(b.posted);
+        }
+      });
+    }
+
+    // 6. Master Filter & Sort Function
+    function filterJobs() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const selectedCategory = document.getElementById('categoryFilter').value;
+      const selectedSort = document.getElementById('sortSelect').value;
+
+      let filtered = allJobs.filter(job => {
+        const matchesQuery = 
+          job.title.toLowerCase().includes(query) ||
+          job.company.toLowerCase().includes(query) ||
+          job.description.toLowerCase().includes(query) ||
+          job.location.toLowerCase().includes(query);
+
+        const matchesCategory = selectedCategory === 'All' || job.category === selectedCategory;
+
+        return matchesQuery && matchesCategory;
+      });
+
+      filtered = sortJobsList(filtered, selectedSort);
+      renderJobs(filtered);
+    }
+
+    // 7. Render jobs
     function renderJobs(jobs) {
       const container = document.getElementById('jobList');
       const countLabel = document.getElementById('jobCount');
@@ -276,26 +347,6 @@
         `;
         container.appendChild(card);
       });
-    }
-
-    // 5. Filter functionality
-    function filterJobs() {
-      const query = document.getElementById('searchInput').value.toLowerCase();
-      const selectedCategory = document.getElementById('categoryFilter').value;
-
-      const filtered = allJobs.filter(job => {
-        const matchesQuery = 
-          job.title.toLowerCase().includes(query) ||
-          job.company.toLowerCase().includes(query) ||
-          job.description.toLowerCase().includes(query) ||
-          job.location.toLowerCase().includes(query);
-
-        const matchesCategory = selectedCategory === 'All' || job.category === selectedCategory;
-
-        return matchesQuery && matchesCategory;
-      });
-
-      renderJobs(filtered);
     }
 
     // Load jobs on startup
