@@ -199,12 +199,15 @@
   <script>
     let allJobs = [];
     let currentTargetUrl = "";
-
-    // Helper: Strip raw HTML tags from job descriptions
+  
+    // Bulletproof Helper: Safely strips tags and decodes entities
     function stripHtmlTags(str) {
       if (!str) return '';
-      return str.replace(/<[^>]*>?/gm, '');
+      const doc = new DOMParser().parseFromString(str, 'text/html');
+      return doc.body.textContent || '';
     }
+    
+  
 
     // 1. UTM Tagging Function
     function addUTMParameters(rawUrl) {
