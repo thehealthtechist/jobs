@@ -153,32 +153,46 @@
     <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full shadow-2xl relative text-slate-100">
       <button onclick="closeApplyModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">✕</button>
       
-      <div class="text-center space-y-3 mb-6">
-        <span class="text-3xl">🚀</span>
-        <h3 class="text-xl font-bold">Continue to Application</h3>
-        <p class="text-xs text-slate-400">
-          Enter your email to track this application and receive new <span class="text-brand-emerald font-semibold">Healthtechist</span> job matches.
-        </p>
+      <!-- State 1: Beehiiv Direct Subscription Embed -->
+      <div id="modalFormState">
+        <div class="text-center space-y-3 mb-4">
+          <span class="text-3xl">🚀</span>
+          <h3 class="text-xl font-bold">Continue to Application</h3>
+          <p class="text-xs text-slate-400">
+            Subscribe to <span class="text-brand-emerald font-semibold">Healthtechist</span> to access this job post and get weekly role alerts.
+          </p>
+        </div>
+
+        <!-- Official Beehiiv Embed Widget (Submits natively to Beehiiv) -->
+        <div class="flex justify-center items-center w-full my-2 [&_iframe]:!mx-auto [&_iframe]:!block">
+          <script async src="https://subscribe-forms.beehiiv.com/v3/loader.js" data-beehiiv-form="4ccf1d2b-c2c2-4b27-b32a-69c258d1d8f3"></script>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-800 text-center">
+          <button 
+            onclick="directToJob()" 
+            class="text-xs text-slate-400 hover:text-slate-200 underline cursor-pointer"
+          >
+            Already subscribed? Skip directly to job post ↗
+          </button>
+        </div>
       </div>
 
-      <form id="applyModalForm" onsubmit="handleApplySubmit(event)" class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Your Email Address</label>
-          <input 
-            type="email" 
-            id="applicantEmail" 
-            required 
-            placeholder="name@company.com" 
-            class="w-full px-4 py-3 rounded-xl bg-slate-800 text-white border border-slate-700 focus:outline-none focus:border-brand-emerald text-sm placeholder-slate-500"
-          />
-        </div>
+      <!-- State 2: Post-Subscription Success Action View -->
+      <div id="modalSuccessState" class="hidden text-center space-y-4 py-4">
+        <span class="text-4xl">🎉</span>
+        <h3 class="text-xl font-bold text-emerald-400">You're Subscribed!</h3>
+        <p class="text-xs text-slate-300">
+          Click below to proceed to the job application.
+        </p>
         <button 
-          type="submit" 
-          class="w-full bg-brand-emerald hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl text-sm transition shadow-md cursor-pointer"
+          onclick="directToJob()" 
+          class="w-full bg-brand-emerald hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl text-sm transition shadow-lg cursor-pointer"
         >
-          Proceed to Application ↗
+          Open Job Application ↗
         </button>
-      </form>
+      </div>
+
     </div>
   </div>
 
@@ -216,12 +230,12 @@
       }
     }
 
-    // 3. Application trigger & Email capture modal
+    // 3. Application trigger & Modal Handling
     function triggerApply(rawUrl) {
       const trackedUrl = addUTMParameters(rawUrl);
-      const savedEmail = localStorage.getItem('applicant_email');
+      const isSubscribed = localStorage.getItem('applicant_subscribed');
 
-      if (savedEmail) {
+      if (isSubscribed) {
         window.open(trackedUrl, '_blank');
       } else {
         currentTargetUrl = trackedUrl;
@@ -233,18 +247,26 @@
       document.getElementById('applyModal').classList.add('hidden');
     }
 
-    function handleApplySubmit(e) {
-      e.preventDefault();
-      const email = document.getElementById('applicantEmail').value.trim();
+    // Listen for events from Beehiiv iframe submission
+    window.addEventListener('message', function(event) {
+      if (event.origin.includes('beehiiv.com') || (event.data && typeof event.data === 'string' && event.data.includes('beehiiv'))) {
+        localStorage.setItem('applicant_subscribed', 'true');
+        
+        // Switch modal view to explicit action button
+        document.getElementById('modalFormState').classList.add('hidden');
+        document.getElementById('modalSuccessState').classList.remove('hidden');
+      }
+    });
 
-      if (email) {
-        // STEP 1: Save email locally so modal won't show again on future clicks
-        localStorage.setItem('applicant_email', email);
+    function directToJob() {
+      localStorage.setItem('applicant_subscribed', 'true');
+      closeApplyModal();
+      
+      // Reset modal layout for clean future operations
+      document.getElementById('modalFormState').classList.remove('hidden');
+      document.getElementById('modalSuccessState').classList.add('hidden');
 
-        // STEP 2: Close the modal UI
-        closeApplyModal();
-
-        // STEP 3: Open the job application link in a new tab
+      if (currentTargetUrl) {
         window.open(currentTargetUrl, '_blank');
       }
     }
