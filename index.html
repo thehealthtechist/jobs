@@ -238,9 +238,28 @@
       const email = document.getElementById('applicantEmail').value.trim();
 
       if (email) {
-        localStorage.setItem('applicant_email', email);
-        closeApplyModal();
+        // STEP 1: Open the job application link IMMEDIATELY
+        // (Must happen first inside user click context to prevent popup blockers)
         window.open(currentTargetUrl, '_blank');
+
+        // STEP 2: Save locally so popup won't prompt user again
+        localStorage.setItem('applicant_email', email);
+
+        // STEP 3: Close modal UI
+        closeApplyModal();
+
+        // STEP 4: Silently subscribe user to Beehiiv in background
+        try {
+          fetch('https://subscribe-forms.beehiiv.com/v3/forms/4ccf1d2b-c2c2-4b27-b32a-69c258d1d8f3/subscriptions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email: email })
+          });
+        } catch (err) {
+          console.error('Beehiiv auto-subscribe error:', err);
+        }
       }
     }
 
