@@ -182,18 +182,6 @@
     </div>
   </div>
 
-  <!-- INVISIBLE SILENT BEEHIIV FORM (BYPASSES CORS RESTRICTIONS) -->
-  <iframe name="beehiiv_silent_iframe" id="beehiiv_silent_iframe" style="display:none;"></iframe>
-  <form 
-    id="beehiivSilentForm" 
-    action="https://subscribe-forms.beehiiv.com/v3/forms/4ccf1d2b-c2c2-4b27-b32a-69c258d1d8f3/subscriptions" 
-    method="POST" 
-    target="beehiiv_silent_iframe" 
-    style="display:none;"
-  >
-    <input type="email" name="email" id="beehiivSilentEmail" />
-  </form>
-
   <script>
     let allJobs = [];
     let currentTargetUrl = "";
@@ -250,24 +238,14 @@
       const email = document.getElementById('applicantEmail').value.trim();
 
       if (email) {
-        // STEP 1: Open the job application link IMMEDIATELY
-        // (Prevents browser popup blockers)
-        window.open(currentTargetUrl, '_blank');
-
-        // STEP 2: Save email locally so modal doesn't pop up again
+        // STEP 1: Save email locally so modal won't show again on future clicks
         localStorage.setItem('applicant_email', email);
 
-        // STEP 3: Close the modal UI
+        // STEP 2: Close the modal UI
         closeApplyModal();
 
-        // STEP 4: Silently submit email to Beehiiv via hidden form targeting hidden iframe
-        const silentEmailInput = document.getElementById('beehiivSilentEmail');
-        const silentForm = document.getElementById('beehiivSilentForm');
-
-        if (silentEmailInput && silentForm) {
-          silentEmailInput.value = email;
-          silentForm.submit();
-        }
+        // STEP 3: Open the job application link in a new tab
+        window.open(currentTargetUrl, '_blank');
       }
     }
 
