@@ -199,15 +199,6 @@
   <script>
     let allJobs = [];
     let currentTargetUrl = "";
-  
-    // Bulletproof Helper: Safely strips tags and decodes entities
-    function stripHtmlTags(str) {
-      if (!str) return '';
-      const doc = new DOMParser().parseFromString(str, 'text/html');
-      return doc.body.textContent || '';
-    }
-    
-  
 
     // 1. UTM Tagging Function
     function addUTMParameters(rawUrl) {
@@ -370,7 +361,7 @@
             </div>
             <h3 class="text-lg font-bold text-brand-darkBlue">${job.title}</h3>
             <p class="text-sm font-semibold text-slate-600">${job.company} — <span class="text-slate-500 font-normal">${job.location}</span></p>
-            <p class="text-sm text-slate-500 max-w-2xl">${stripHtmlTags(job.description)}</p>
+            <p class="text-sm text-slate-500 max-w-2xl">${job.description}</p>
           </div>
           <div class="w-full md:w-auto text-right">
             <button 
