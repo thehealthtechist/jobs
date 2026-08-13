@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Healthtechist Jobs — Healthcare & Healthtech Opportunities</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              darkBlue: '#0F172A', // Deep navy/slate blue background
+              emerald: '#059669',  // Vibrant healthtech green
+              teal: '#0D9488',     // Deep teal secondary
+              cyan: '#06B6D4',     // Bright blue accent
+              lightBg: '#F8FAFC'   // Clean light grey background
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-brand-lightBg text-slate-800 font-sans">
+
+  <header class="bg-brand-darkBlue border-b border-slate-800 sticky top-0 z-50 text-white">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+      
+      <a href="https://www.healthtechist.com" class="flex items-center gap-3 group">
+        <img 
+          src="logo.png" 
+          alt="healthtechist logo" 
+          class="h-9 w-auto rounded object-contain bg-white/10 p-1" 
+          onerror="this.style.display='none'; document.getElementById('logo-text-fallback').style.display='block';"
+        />
+        <div id="logo-text-fallback" class="hidden font-extrabold text-xl tracking-tight text-white">
+          healthtech<span class="text-brand-emerald">ist</span>
+        </div>
+      </a>
+
+      <a href="https://www.healthtechist.com" class="text-xs sm:text-sm font-semibold text-slate-300 hover:text-brand-cyan transition flex items-center gap-1">
+        <span>Home</span> →
+      </a>
+    </div>
+  </header>
+
+  <section class="bg-gradient-to-b from-brand-darkBlue to-slate-900 text-white py-12 px-4 border-b border-slate-800">
+    <div class="max-w-4xl mx-auto text-center space-y-6">
+      
+      <span class="inline-block bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">
+        Job Board
+      </span>
+
+      <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight">
+        Find Your Next Role in <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">Healthtech & AI</span>
+      </h1>
+      
+      <p class="text-slate-300 text-base md:text-lg max-w-2xl mx-auto">
+        Curated opportunities across HealthTech, AI, Digital Health, Telehealth, Clinical Informatics, and Health Data.
+      </p>
+
+      <div class="bg-slate-800/80 border border-emerald-500/20 p-6 rounded-2xl max-w-xl mx-auto backdrop-blur-sm shadow-xl">
+        <h3 class="text-sm font-bold uppercase tracking-wider text-emerald-400 mb-2">
+          📩 Get Weekly Job Alerts
+        </h3>
+        <p class="text-xs text-slate-300 mb-4">
+          Join healthtech operators receiving our weekly breakdown & top roles.
+        </p>
+
+        <div id="beehiiv-hero-embed" class="flex justify-center items-center w-full text-center [&_iframe]:!mx-auto [&_iframe]:!block">
+          <script async src="https://subscribe-forms.beehiiv.com/v3/loader.js" data-beehiiv-form="4ccf1d2b-c2c2-4b27-b32a-69c258d1d8f3"></script>
+        </div>
+      </div>
+
+      <div class="pt-4 flex flex-col sm:flex-row gap-3 max-w-2xl mx-auto">
+        <input 
+          type="text" 
+          id="searchInput" 
+          placeholder="Search role, skill, or company (e.g., Epic, AI, Remote)..." 
+          class="w-full px-4 py-3 rounded-xl bg-slate-800 text-white border border-slate-700 focus:outline-none focus:border-brand-emerald text-sm placeholder-slate-400"
+          onkeyup="filterJobs()"
+        />
+        <select 
+          id="categoryFilter" 
+          class="px-4 py-3 rounded-xl bg-slate-800 text-white border border-slate-700 focus:outline-none focus:border-brand-emerald text-sm cursor-pointer"
+          onchange="filterJobs()"
+        >
+          <option value="All">All Categories</option>
+          <option value="Health AI">Health AI</option>
+          <option value="Product & Engineering">Product & Engineering</option>
+          <option value="Clinical Informatics">Clinical Informatics</option>
+          <option value="Operations">Operations</option>
+        </select>
+      </div>
+
+    </div>
+  </section>
+
+  <main class="max-w-5xl mx-auto px-4 py-10">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-xl font-bold text-brand-darkBlue flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-brand-emerald inline-block"></span>
+        Latest Openings
+      </h2>
+      <span id="jobCount" class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Showing 0 jobs</span>
+    </div>
+
+    <div id="jobList" class="grid gap-4"></div>
+  </main>
+
+  <section class="bg-gradient-to-r from-teal-900 via-slate-900 to-brand-darkBlue text-white py-12 px-4 mt-12 border-t border-slate-800">
+    <div class="max-w-3xl mx-auto text-center space-y-4">
+      <h3 class="text-2xl font-bold">Never miss a high-leverage healthtech opportunity.</h3>
+      <p class="text-slate-300 text-sm max-w-lg mx-auto">
+        Subscribe to the <strong>healthtechist</strong> newsletter to get weekly strategy, career guides, and curated market jobs directly in your inbox.
+      </p>
+      
+      <div class="pt-2 flex justify-center items-center w-full text-center [&_iframe]:!mx-auto [&_iframe]:!block">
+        <script async src="https://subscribe-forms.beehiiv.com/v3/loader.js" data-beehiiv-form="4ccf1d2b-c2c2-4b27-b32a-69c258d1d8f3"></script>
+      </div>
+    </div>
+  </section>
+
+  <footer class="bg-brand-darkBlue border-t border-slate-800 py-6 text-center text-xs text-slate-400">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-2">
+        <img src="logo.png" alt="healthtechist" class="h-6 w-auto opacity-80" onerror="this.style.display='none'"/>
+        <span>© 2026 healthtechist. All rights reserved.</span>
+      </div>
+      <div class="flex gap-4">
+        <a href="https://www.healthtechist.com" class="hover:text-brand-emerald transition" target="_blank">Newsletter</a>
+        <a href="https://www.healthtechist.com" class="hover:text-brand-emerald transition" target="_blank">Courses</a>
+        <a href="https://www.linkedin.com/company/healthtechist/" class="hover:text-brand-emerald transition" target="_blank">LinkedIn</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- APPLICANT EMAIL CAPTURE MODAL -->
+  <div id="applyModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full shadow-2xl relative text-slate-100">
+      <button onclick="closeApplyModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">✕</button>
+      
+      <div class="text-center space-y-3 mb-6">
+        <span class="text-3xl">🚀</span>
+        <h3 class="text-xl font-bold">Continue to Application</h3>
+        <p class="text-xs text-slate-400">
+          Enter your email to track this application and receive new <span class="text-brand-emerald font-semibold">Healthtechist</span> job matches.
+        </p>
+      </div>
+
+      <form id="applyModalForm" onsubmit="handleApplySubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Your Email Address</label>
+          <input 
+            type="email" 
+            id="applicantEmail" 
+            required 
+            placeholder="name@company.com" 
+            class="w-full px-4 py-3 rounded-xl bg-slate-800 text-white border border-slate-700 focus:outline-none focus:border-brand-emerald text-sm placeholder-slate-500"
+          />
+        </div>
+        <button 
+          type="submit" 
+          class="w-full bg-brand-emerald hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl text-sm transition shadow-md cursor-pointer"
+        >
+          Proceed to Application ↗
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let allJobs = [];
+    let currentTargetUrl = "";
+
+    // 1. UTM Tagging Function
+    function addUTMParameters(rawUrl) {
+      try {
+        const urlObj = new URL(rawUrl);
+        urlObj.searchParams.set('utm_source', 'healthtechist');
+        urlObj.searchParams.set('utm_medium', 'job_board');
+        urlObj.searchParams.set('utm_campaign', 'jobs_portal');
+        return urlObj.toString();
+      } catch (e) {
+        const separator = rawUrl.includes('?') ? '&' : '?';
+        return `${rawUrl}${separator}utm_source=healthtechist&utm_medium=job_board&utm_campaign=jobs_portal`;
+      }
+    }
+
+    // 2. Fetch Jobs from external JSON
+    async function fetchJobs() {
+      try {
+        const response = await fetch('jobs.json');
+        if (!response.ok) throw new Error('Network response was not ok');
+        allJobs = await response.json();
+        renderJobs(allJobs);
+      } catch (error) {
+        console.error('Error loading jobs:', error);
+        document.getElementById('jobList').innerHTML = `
+          <div class="text-center py-12 bg-white rounded-2xl border border-slate-200">
+            <p class="text-slate-500 font-medium">Unable to load jobs right now. Please try again later.</p>
+          </div>`;
+      }
+    }
+
+    // 3. Application trigger & Email capture modal
+    function triggerApply(rawUrl) {
+      const trackedUrl = addUTMParameters(rawUrl);
+      const savedEmail = localStorage.getItem('applicant_email');
+
+      if (savedEmail) {
+        window.open(trackedUrl, '_blank');
+      } else {
+        currentTargetUrl = trackedUrl;
+        document.getElementById('applyModal').classList.remove('hidden');
+      }
+    }
+
+    function closeApplyModal() {
+      document.getElementById('applyModal').classList.add('hidden');
+    }
+
+    function handleApplySubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById('applicantEmail').value.trim();
+
+      if (email) {
+        localStorage.setItem('applicant_email', email);
+        closeApplyModal();
+        window.open(currentTargetUrl, '_blank');
+      }
+    }
+
+    // 4. Render jobs
+    function renderJobs(jobs) {
+      const container = document.getElementById('jobList');
+      const countLabel = document.getElementById('jobCount');
+      
+      container.innerHTML = '';
+      countLabel.textContent = `Showing ${jobs.length} jobs`;
+
+      if (jobs.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12 bg-white rounded-2xl border border-slate-200">
+            <p class="text-slate-500 font-medium">No matching healthtech jobs found.</p>
+          </div>`;
+        return;
+      }
+
+      jobs.forEach(job => {
+        const card = document.createElement('div');
+        card.className = "bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md hover:border-brand-emerald/40 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4";
+        
+        card.innerHTML = `
+          <div class="space-y-2">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-brand-emerald border border-emerald-200/60">
+                ${job.category}
+              </span>
+              <span class="text-xs text-slate-400">• ${job.posted} via ${job.source}</span>
+            </div>
+            <h3 class="text-lg font-bold text-brand-darkBlue">${job.title}</h3>
+            <p class="text-sm font-semibold text-slate-600">${job.company} — <span class="text-slate-500 font-normal">${job.location}</span></p>
+            <p class="text-sm text-slate-500 max-w-2xl">${job.description}</p>
+          </div>
+          <div class="w-full md:w-auto text-right">
+            <button 
+              onclick="triggerApply('${job.applyUrl}')"
+              class="inline-block w-full md:w-auto text-center bg-brand-emerald hover:bg-emerald-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition shadow-sm cursor-pointer"
+            >
+              Apply on ${job.source} ↗
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // 5. Filter functionality
+    function filterJobs() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const selectedCategory = document.getElementById('categoryFilter').value;
+
+      const filtered = allJobs.filter(job => {
+        const matchesQuery = 
+          job.title.toLowerCase().includes(query) ||
+          job.company.toLowerCase().includes(query) ||
+          job.description.toLowerCase().includes(query) ||
+          job.location.toLowerCase().includes(query);
+
+        const matchesCategory = selectedCategory === 'All' || job.category === selectedCategory;
+
+        return matchesQuery && matchesCategory;
+      });
+
+      renderJobs(filtered);
+    }
+
+    // Load jobs on startup
+    fetchJobs();
+  </script>
+</body>
+</html>
