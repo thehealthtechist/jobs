@@ -182,6 +182,18 @@
     </div>
   </div>
 
+  <!-- INVISIBLE SILENT BEEHIIV FORM (BYPASSES CORS RESTRICTIONS) -->
+  <iframe name="beehiiv_silent_iframe" id="beehiiv_silent_iframe" style="display:none;"></iframe>
+  <form 
+    id="beehiivSilentForm" 
+    action="https://subscribe-forms.beehiiv.com/v3/forms/4ccf1d2b-c2c2-4b27-b32a-69c258d1d8f3/subscriptions" 
+    method="POST" 
+    target="beehiiv_silent_iframe" 
+    style="display:none;"
+  >
+    <input type="email" name="email" id="beehiivSilentEmail" />
+  </form>
+
   <script>
     let allJobs = [];
     let currentTargetUrl = "";
@@ -239,26 +251,22 @@
 
       if (email) {
         // STEP 1: Open the job application link IMMEDIATELY
-        // (Must happen first inside user click context to prevent popup blockers)
+        // (Prevents browser popup blockers)
         window.open(currentTargetUrl, '_blank');
 
-        // STEP 2: Save locally so popup won't prompt user again
+        // STEP 2: Save email locally so modal doesn't pop up again
         localStorage.setItem('applicant_email', email);
 
-        // STEP 3: Close modal UI
+        // STEP 3: Close the modal UI
         closeApplyModal();
 
-        // STEP 4: Silently subscribe user to Beehiiv in background
-        try {
-          fetch('https://subscribe-forms.beehiiv.com/v3/forms/4ccf1d2b-c2c2-4b27-b32a-69c258d1d8f3/subscriptions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ email: email })
-          });
-        } catch (err) {
-          console.error('Beehiiv auto-subscribe error:', err);
+        // STEP 4: Silently submit email to Beehiiv via hidden form targeting hidden iframe
+        const silentEmailInput = document.getElementById('beehiivSilentEmail');
+        const silentForm = document.getElementById('beehiivSilentForm');
+
+        if (silentEmailInput && silentForm) {
+          silentEmailInput.value = email;
+          silentForm.submit();
         }
       }
     }
