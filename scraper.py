@@ -1,124 +1,182 @@
 import json
+import os
+import random
 import re
-from datetime import datetime
 import requests
+from serpapi import GoogleSearch
 
-# 1. Target Healthtech Companies (Greenhouse & Lever Board Names)
+# ==========================================
+# 1. EXPANDED HEALTHTECH COMPANY DIRECTORY
+# ==========================================
 GREENHOUSE_COMPANIES = [
-    {"name": "Ro", "board": "ro"},
-    {"name": "Komodo Health", "board": "komodohealth"},
-    {"name": "Color", "board": "color"},
-    {"name": "Virta Health", "board": "virtahealth"},
-    {"name": "Spring Health", "board": "springhealth"},
+    "komodohealth", "ro", "color", "virtahealth", "springhealth",
+    "doximity", "zocdoc", "headspace", "flatironhealth", "abridge",
+    "tempus", "carbonhealth", "elationhealth", "oscarhealth", "vizai",
+    "commure", "omadahealth", "lyrahealth", "hingehealth", "oakstreethealth"
 ]
 
 LEVER_COMPANIES = [
-    {"name": "Hims & Hers", "board": "hims"},
-    {"name": "Modern Health", "board": "modernhealth"},
+    "hims", "modernhealth", "osmind", "ambiencehealthcare", 
+    "hippocraticai", "strivehealth", "charliehealth"
 ]
 
-# Keywords to auto-assign categories
+# Max jobs to keep per individual company to maintain variety
+MAX_JOBS_PER_COMPANY = 3
+
+# ==========================================
+# 2. CATEGORIZATION & KEYWORD MATCHING
+# ==========================================
 CATEGORIES = {
-    "Health AI": ["ai", "machine learning", "data scientist", "llm", "nlp", "algorithm"],
-    "Clinical Informatics": ["informatics", "clinical", "ehr", "epic", "fhir", "hl7", "medical"],
+    "Health AI": ["ai", "machine learning", "data scientist", "llm", "nlp", "algorithm", "deep learning"],
+    "Clinical Informatics": ["informatics", "clinical", "ehr", "epic", "fhir", "hl7", "medical director", "health data"],
     "Product & Engineering": ["product manager", "engineer", "software", "frontend", "backend", "full stack", "developer"],
-    "Operations": ["operations", "ops", "credentialing", "implementation", "customer success", "manager"]
+    "Operations": ["operations", "ops", "credentialing", "implementation", "customer success", "care management"]
 }
 
 def categorize_role(title):
-    """Categorize job based on title keywords."""
     title_lower = title.lower()
     for category, keywords in CATEGORIES.items():
         if any(keyword in title_lower for keyword in keywords):
             return category
-    return "Operations"  # Default fallback
+    return "Operations"
 
-def fetch_greenhouse_jobs(company_name, board_token):
-    """Fetch listings from Greenhouse public API."""
-    url = f"https://boards-api.greenhouse.io/v1/boards/{board_token}/jobs?content=true"
+def clean_text(text):
+    if not text:
+        return ""
+    clean = re.sub('<[^<]+?>', '', text)
+    return clean.strip().replace('\n', ' ')[:200] + "..."
+
+# ==========================================
+# 3. GOOGLE JOBS SCRAPER
+# ==========================================
+def fetch_google_jobs(api_key):
+    """Fetch live jobs from Google Jobs using SerpApi."""
+    if not api_key:
+        print("No SERPAPI_KEY found. Skipping Google Jobs fetch.")
+        return []
+
+    queries = [
+        "Healthtech AI jobs",
+        "Digital Health product manager jobs",
+        "Healthcare operations jobs"
+    ]
+    
+    google_jobs = []
+    
+    for query in queries:
+        try:
+            params = {
+                "engine": "google_jobs",
+                "q": query,
+                "hl": "en",
+                "api_key": api_key
+            }
+            search = GoogleSearch(params)
+            results = search.get_dict()
+            jobs = results.get("jobs_results", [])
+            
+            for job in jobs[:5]: # Take top 5 per query
+                title = job.get("title", "")
+                google_jobs.append({
+                    "id": job.get("job_id", str(random.randint(100000, 999999))),
+                    "title": title,
+                    "company": job.get("company_name", "Healthtech Company"),
+                    "location": job.get("location", "Remote / US"),
+                    "category": categorize_role(title),
+                    "type": "Full-Time",
+                    "posted": job.get("detected_extensions", {}).get("posted_at", "Recently"),
+                    "source": "Google Jobs",
+                    "applyUrl": job.get("related_links", [{}])[0].get("link", "https://google.com"),
+                    "description": clean_text(job.get("description", ""))
+                })
+        except Exception as e:
+            print(f"Error fetching Google Jobs for query '{query}': {e}")
+            
+    return google_jobs
+
+# ==========================================
+# 4. ATS BOARD SCRAPERS (GREENHOUSE & LEVER)
+# ==========================================
+def fetch_greenhouse_jobs(company_token):
+    url = f"https://boards-api.greenhouse.io/v1/boards/{company_token}/jobs?content=true"
     jobs = []
     try:
-        response = requests.get(url, timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            for job in data.get("jobs", []):
-                title = job.get("title", "")
-                category = categorize_role(title)
-                
-                # Format job entry
+        res = requests.get(url, timeout=10)
+        if res.status_code == 200:
+            data = res.json()
+            raw_jobs = data.get("jobs", [])
+            for j in raw_jobs[:MAX_JOBS_PER_COMPANY]:
+                title = j.get("title", "")
                 jobs.append({
-                    "id": job.get("id"),
+                    "id": j.get("id"),
                     "title": title,
-                    "company": company_name,
-                    "location": job.get("location", {}).get("name", "Remote / Various"),
-                    "category": category,
+                    "company": company_token.replace("-", " ").title(),
+                    "location": j.get("location", {}).get("name", "Remote / Various"),
+                    "category": categorize_role(title),
                     "type": "Full-Time",
                     "posted": "Recently",
                     "source": "Greenhouse",
-                    "applyUrl": job.get("absolute_url", ""),
-                    "description": clean_html(job.get("content", ""))[:200] + "..."
+                    "applyUrl": j.get("absolute_url", ""),
+                    "description": clean_text(j.get("content", ""))
                 })
     except Exception as e:
-        print(f"Error fetching Greenhouse for {company_name}: {e}")
+        print(f"Error fetching Greenhouse ({company_token}): {e}")
     return jobs
 
-def fetch_lever_jobs(company_name, board_token):
-    """Fetch listings from Lever public API."""
-    url = f"https://api.lever.co/v0/postings/{board_token}"
+def fetch_lever_jobs(company_token):
+    url = f"https://api.lever.co/v0/postings/{company_token}"
     jobs = []
     try:
-        response = requests.get(url, timeout=10)
-        if response.status_code == 200:
-            postings = response.json()
-            for job in postings:
-                title = job.get("text", "")
-                category = categorize_role(title)
-                
-                categories_data = job.get("categories", {})
-                location = categories_data.get("location", "Remote")
-                commitment = categories_data.get("commitment", "Full-Time")
-
+        res = requests.get(url, timeout=10)
+        if res.status_code == 200:
+            postings = res.json()
+            for j in postings[:MAX_JOBS_PER_COMPANY]:
+                title = j.get("text", "")
                 jobs.append({
-                    "id": job.get("id"),
+                    "id": j.get("id"),
                     "title": title,
-                    "company": company_name,
-                    "location": location,
-                    "category": category,
-                    "type": commitment,
+                    "company": company_token.title(),
+                    "location": j.get("categories", {}).get("location", "Remote"),
+                    "category": categorize_role(title),
+                    "type": j.get("categories", {}).get("commitment", "Full-Time"),
                     "posted": "Recently",
                     "source": "Lever",
-                    "applyUrl": job.get("hostedUrl", ""),
-                    "description": job.get("descriptionPlain", "")[:200] + "..."
+                    "applyUrl": j.get("hostedUrl", ""),
+                    "description": clean_text(j.get("descriptionPlain", ""))
                 })
     except Exception as e:
-        print(f"Error fetching Lever for {company_name}: {e}")
+        print(f"Error fetching Lever ({company_token}): {e}")
     return jobs
 
-def clean_html(raw_html):
-    """Strip HTML tags for cleaner descriptions."""
-    clean_text = re.sub('<[^<]+?>', '', raw_html)
-    return clean_text.strip().replace('\n', ' ')
-
+# ==========================================
+# 5. MAIN EXECUTION
+# ==========================================
 def run_scraper():
     all_jobs = []
     
-    # 1. Scraping Greenhouse Boards
+    # 1. Google Jobs (optional API key from environment variables)
+    serpapi_key = os.getenv("SERPAPI_KEY", "")
+    google_jobs = fetch_google_jobs(serpapi_key)
+    all_jobs.extend(google_jobs)
+
+    # 2. Greenhouse Companies
     for company in GREENHOUSE_COMPANIES:
-        print(f"Fetching {company['name']} (Greenhouse)...")
-        all_jobs.extend(fetch_greenhouse_jobs(company["name"], company["board"]))
+        all_jobs.extend(fetch_greenhouse_jobs(company))
 
-    # 2. Scraping Lever Boards
+    # 3. Lever Companies
     for company in LEVER_COMPANIES:
-        print(f"Fetching {company['name']} (Lever)...")
-        all_jobs.extend(fetch_lever_jobs(company["name"], company["board"]))
+        all_jobs.extend(fetch_lever_jobs(company))
 
-    # 3. Limit list to top 30 most recent roles & write to jobs.json
-    all_jobs = all_jobs[:30]
-    
+    # Shuffle so companies and categories are evenly mixed
+    random.shuffle(all_jobs)
+
+    # Cap total jobs shown at 40
+    final_jobs = all_jobs[:40]
+
     with open("jobs.json", "w", encoding="utf-8") as f:
-        json.dump(all_jobs, f, indent=2, ensure_ascii=False)
-        
-    print(f"Successfully updated jobs.json with {len(all_jobs)} roles!")
+        json.dump(final_jobs, f, indent=2, ensure_ascii=False)
+
+    print(f"Successfully wrote {len(final_jobs)} mixed jobs to jobs.json!")
 
 if __name__ == "__main__":
     run_scraper()
